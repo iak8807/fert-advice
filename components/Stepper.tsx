@@ -8,7 +8,13 @@ import { Step2Soil } from "@/components/forms/Step2Soil";
 import { Step3Leaf } from "@/components/forms/Step3Leaf";
 import { Step4Prefs } from "@/components/forms/Step4Prefs";
 import { Step5Prices } from "@/components/forms/Step5Prices";
-import type { AdviceResult, PreferencesInput, PriceInput, ProjectInput, SoilInput } from "@/lib/types";
+import type {
+  AdviceResult,
+  PreferencesInput,
+  PriceInput,
+  ProjectInput,
+  SoilInput,
+} from "@/lib/types";
 import { getTables } from "@/lib/seed";
 import { lookupDose } from "@/lib/engine/lookup";
 import { clampDose } from "@/lib/engine/layer2Clamp";
@@ -43,12 +49,23 @@ export function useAdviceStore() {
   return ctx;
 }
 
-export function Stepper() {
+/** Provider'ı yukarı taşımak için */
+export function AdviceProvider({ children }: { children: React.ReactNode }) {
   const [step, setStep] = React.useState(0);
 
-  const [project, setProject] = React.useState<ProjectInput>({ name: "", crop: "", region: "" });
-  const [soil, setSoil] = React.useState<SoilInput>({ method: "Sulu", bin: "0-1.0" });
-  const [prefs, setPrefs] = React.useState<PreferencesInput>({ ecoMode: false, tone: "Klasik" });
+  const [project, setProject] = React.useState<ProjectInput>({
+    name: "",
+    crop: "",
+    region: "",
+  });
+  const [soil, setSoil] = React.useState<SoilInput>({
+    method: "Sulu",
+    bin: "0-1.0",
+  });
+  const [prefs, setPrefs] = React.useState<PreferencesInput>({
+    ecoMode: false,
+    tone: "Klasik",
+  });
   const [prices, setPrices] = React.useState<PriceInput>({
     urea_try_per_kg: null,
     tsp_try_per_kg: null,
@@ -122,38 +139,54 @@ export function Stepper() {
     prefs,
     prices,
     lastError,
-    setProject: (v) => setProject(v),
-    setSoil: (v) => setSoil(v),
-    setPrefs: (v) => setPrefs(v),
-    setPrices: (v) => setPrices(v),
+    setProject,
+    setSoil,
+    setPrefs,
+    setPrices,
     setStep,
     compute,
   };
 
+  return (
+    <AdviceContext.Provider value={{ state: store, result }}>
+      {children}
+    </AdviceContext.Provider>
+  );
+}
+
+/** Stepper artık sadece UI; state provider'dan geliyor */
+export function Stepper() {
+  const { state } = useAdviceStore();
+
   const steps = [
-    <Step1Project key="s1" value={project} onChange={setProject} />,
-    <Step2Soil key="s2" value={soil} onChange={setSoil} />,
+    <Step1Project key="s1" value={state.project} onChange={state.setProject} />,
+    <Step2Soil key="s2" value={state.soil} onChange={state.setSoil} />,
     <Step3Leaf key="s3" />,
-    <Step4Prefs key="s4" value={prefs} onChange={setPrefs} />,
-    <Step5Prices key="s5" value={prices} onChange={setPrices} />,
+    <Step4Prefs key="s4" value={state.prefs} onChange={state.setPrefs} />,
+    <Step5Prices key="s5" value={state.prices} onChange={state.setPrices} />,
   ];
 
   return (
-    <AdviceContext.Provider value={{ state: store, result }}>
-      <div className="space-y-4">
-        <StepNav step={step} />
+    <div className="space-y-4">
+      <StepNav step={state.step} />
+      <div>{steps[state.step]}</div>
 
-        <div>{steps[step]}</div>
-
-        <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}>
-            Geri
-          </Button>
-          <Button variant="secondary" onClick={() => setStep((s) => Math.min(4, s + 1))} disabled={step === 4}>
-            İleri
-          </Button>
-        </div>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant="secondary"
+          onClick={() => state.setStep(Math.max(0, state.step - 1))}
+          disabled={state.step === 0}
+        >
+          Geri
+        </Button>
+        <Button
+          variant="secondary"
+          onClick={() => state.setStep(Math.min(4, state.step + 1))}
+          disabled={state.step === 4}
+        >
+          İleri
+        </Button>
       </div>
-    </AdviceContext.Provider>
+    </div>
   );
 }
