@@ -13,7 +13,7 @@ export function Step1Project({
   onChange: (v: ProjectInput) => void;
 }) {
   const tables = getTables();
-  const regions = Object.keys(tables.N.data ?? {});
+  const regions = Object.keys(tables.N.data ?? tables.N.table_numbers_by_region ?? {});
 
   // crops by region (use N table as canonical)
   const crops = value.region ? Object.keys(tables.N.data?.[value.region] ?? {}) : [];
