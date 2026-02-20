@@ -14,8 +14,17 @@ export type NutrientTable = {
     notes: string[];
   };
   bins: BinLabel[];
-  table_numbers_by_region: Record<RegionKey, number[]>;
-  data: Record<RegionKey, Record<CropKey, Partial<Record<MethodKey, Record<BinLabel, number | null>>>>>;
+
+  // sende bunlar var:
+  region_index?: Record<RegionKey, number[]>;
+  methods?: string[];
+  supported_crops?: CropKey[];
+
+  // kritik alan:
+  tables_by_region: Record<
+    RegionKey,
+    Record<CropKey, Partial<Record<MethodKey, Record<BinLabel, number | null>>>>
+  >;
 };
 
 export type SoilInput = {
