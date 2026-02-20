@@ -3,6 +3,11 @@ import P from "@/data/P_tables.min.json";
 import K from "@/data/K_tables.min.json";
 import type { NutrientTable } from "@/lib/types";
 
+function pickData(raw: any) {
+  // JSON farklı isimle gelmiş olabilir:
+  return raw?.data ?? raw?.tables ?? raw?.values ?? raw?.by_region ?? {};
+}
+
 function normalize(raw: any, kind: "N" | "P2O5" | "K2O"): NutrientTable {
   return {
     meta: raw?.meta ?? {
@@ -15,7 +20,7 @@ function normalize(raw: any, kind: "N" | "P2O5" | "K2O"): NutrientTable {
     },
     bins: raw?.bins ?? ["0-1.0", "1.1-2.0", "2.1-3.0", "3+"],
     table_numbers_by_region: raw?.table_numbers_by_region ?? {},
-    data: raw?.data ?? {}, // <-- kritik: data yoksa boş obje
+    data: pickData(raw), // <-- kritik
   };
 }
 
