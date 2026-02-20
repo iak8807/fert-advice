@@ -7,10 +7,10 @@ export function lookupDose(
   method: MethodKey,
   bin: BinLabel
 ): number | null {
-  const r = table.data?.[region];
+  const r = table.tables_by_region?.[region];
   const c = r?.[crop];
   const m = c?.[method];
   if (!m) return null;
-  const v = m[bin];
+  const v = (m as any)[bin];
   return typeof v === "number" ? v : null;
 }
